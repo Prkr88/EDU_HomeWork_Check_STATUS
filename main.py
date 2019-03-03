@@ -40,13 +40,13 @@ def login_to_site():
         driver.find_element_by_id("submit_button").click()
         time.sleep(1)
 
-        # # Download homePage
-        # content = driver.page_source
-        # soup = BeautifulSoup(content, 'html.parser')
-        # with open("data/home.html", 'wb') as out:
-        #     out.write(soup.encode("utf-8"))
-        # get_teacher_ids()
-        # get_teacher_assignments(driver)
+        # Download homePage
+        content = driver.page_source
+        soup = BeautifulSoup(content, 'html.parser')
+        with open("data/home.html", 'wb') as out:
+            out.write(soup.encode("utf-8"))
+        get_teacher_ids()
+        get_teacher_assignments(driver)
         get_teacher_data()
         generate_conclusion()
 
