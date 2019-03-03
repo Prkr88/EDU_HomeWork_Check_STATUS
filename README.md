@@ -8,15 +8,15 @@ Instructions:
 
 How to activate:
 
-Download the repozitory zip .
-Double Click runProgram.bat .
-Read The Next Section .
+Download the repozitory zip .\n
+Double Click runProgram.bat .\n
+Read The Next Section .\n
 
 ***************************************************************
  Hello, This Program will Generate an html output of the     
  HOME_WORK check status in your classes.                     
  You will be prompt to enter your username and password      
- !! Password will not be saved.                              
+ !! Password will not be saved. (characters are hidden).                               
  Then you will be asked to enter base name of template class 
  this value is necessary to filter the results.              
  -> example: 09-C_Programming-1                              
