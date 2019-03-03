@@ -4,6 +4,14 @@ This simple Script will Generate HomeWork Check Status at Your class.
 
 Instructions:
 
+**************************************************************
+
+How to activate:
+
+Download the repozitory zip .
+Double Click runProgram.bat .
+Read The Next Section .
+
 ***************************************************************
  Hello, This Program will Generate an html output of the     
  HOME_WORK check status in your classes.                     
