@@ -21,6 +21,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MONTHS = ['Jan', "Feb", 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 CURRENT_YEAR = 2019
 relevant_data = {}
+CHECK_TIME = 14
 
 
 def login_to_site():
@@ -39,13 +40,13 @@ def login_to_site():
         driver.find_element_by_id("submit_button").click()
         time.sleep(1)
 
-        # Download homePage
-        content = driver.page_source
-        soup = BeautifulSoup(content, 'html.parser')
-        with open("data/home.html", 'wb') as out:
-            out.write(soup.encode("utf-8"))
-        get_teacher_ids()
-        get_teacher_assignments(driver)
+        # # Download homePage
+        # content = driver.page_source
+        # soup = BeautifulSoup(content, 'html.parser')
+        # with open("data/home.html", 'wb') as out:
+        #     out.write(soup.encode("utf-8"))
+        # get_teacher_ids()
+        # get_teacher_assignments(driver)
         get_teacher_data()
         generate_conclusion()
 
@@ -180,7 +181,11 @@ def generate_conclusion():
             cell_value = ''
             try:
                 if value[a_name]['to_grade'] != None:
-                    cell_value = '''<td bgcolor="#ed3300">'''+'late ' + str(value[a_name]['days_passed'])+'''</td>'''
+                    day_p = int(str(value[a_name]['days_passed']))-CHECK_TIME
+                    if day_p>0:
+                        cell_value = '''<td bgcolor="#ed3300">'''+'late in ' + str(day_p)+" Days"'''</td>'''
+                    else:
+                        cell_value = '''<td">Not Dued Yet</td>'''
                 else:
                     cell_value ='''<td>V</td>'''
             except:
