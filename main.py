@@ -6,8 +6,9 @@ import time
 import re
 import os
 import codecs
-from html_bases import HTML_BASE_START,HTML_BASE_END
+from html_bases import HTML_BASE_START, HTML_BASE_END
 import webbrowser
+import getpass
 
 teacher_ids_list = []  # This list Contains all teachers ID's
 TEMPLATE_NAME = ""  # Stores class template name for filtering
@@ -20,13 +21,13 @@ CURRENT_YEAR = 2019  # Stores Default Year Value
 relevant_data = {}  # Stores Data to Display
 CHECK_TIME = 14  # Stores Base Time for checking assignment
 
-
-
 '''
 This Function will connect to https://magshimim.edu20.org/
 Using the username and password that was entered. 
 Inputs are Global.
 '''
+
+
 def login_to_site():
     # Create New session
     with requests.Session() as s:
@@ -59,9 +60,12 @@ def login_to_site():
         # Build HTML for presentation
         generate_conclusion()
 
+
 '''
 Download all relevant Pages using teachers ID's
 '''
+
+
 def get_teacher_assignments(driver):
     for id in teacher_ids_list:
         driver.get("https://magshimim.edu20.org/teacher_assignments/list/" + id)
@@ -75,9 +79,12 @@ def get_teacher_assignments(driver):
                 out.write(soup.encode("utf-8"))
         time.sleep(1)
 
+
 '''
 Extract Teachers ID's from Home Page
 '''
+
+
 def get_teacher_ids():
     with codecs.open('data/home.html', 'r', encoding="utf8") as file:
         home_page = file.read()
@@ -85,10 +92,13 @@ def get_teacher_ids():
         for element in ids:
             teacher_ids_list.append(element.split('show/')[1])
 
+
 '''
 This Function sees all the data and 
 calls another function to extract only the relevant parts. 
 '''
+
+
 def get_teacher_data():
     # Get File list from folder
     files_list = get_file_list()
@@ -101,9 +111,12 @@ def get_teacher_data():
             get_relevant_data(raw_data, t_id)
     return "Done"
 
+
 '''
 Get relevant Data From Assignments HTML Pages
 '''
+
+
 def get_relevant_data(raw_data, t_id):
     global relevant_data
     rel_rows = []
@@ -173,9 +186,12 @@ def get_relevant_data(raw_data, t_id):
         except Exception as e:
             print(e)
 
+
 '''
 Gets File list from Path
 '''
+
+
 def get_file_list():
     path = os.path.join(BASE_DIR, 'data')
     file_list = []
@@ -185,12 +201,15 @@ def get_file_list():
                 file_list.append(os.path.join(root, file))
     return file_list
 
+
 '''
 This is the main function for generating the results . 
 the results are generated during run time and the HTML code is being writen 
 accordingly.
 The Function is heavily commented for further reuse.
 '''
+
+
 def generate_conclusion():
     global relevant_data
     first_iter = 1
@@ -210,26 +229,26 @@ def generate_conclusion():
             # Close Headers
             str_html += '''</tr></thead><tbody>'''
         # Start New Row
-        str_html +='''<tr><th scope="row">'''+key+'''</th>'''
+        str_html += '''<tr><th scope="row">''' + key + '''</th>'''
         for a_name in ass_list:
             cell_value = ''
             try:
                 if value[a_name]['to_grade'] != None:
-                    day_p = int(str(value[a_name]['days_passed']))-CHECK_TIME
-                    if day_p>0:
-                        cell_value = '''<td bgcolor="#ed3300">'''+'late in ' + str(day_p)+" Days"'''</td>'''
+                    day_p = int(str(value[a_name]['days_passed'])) - CHECK_TIME
+                    if day_p > 0:
+                        cell_value = '''<td bgcolor="#ed3300">''' + 'late in ' + str(day_p) + " Days"'''</td>'''
                     else:
                         cell_value = '''<td">Not Dued Yet</td>'''
                 else:
-                    cell_value ='''<td>V</td>'''
+                    cell_value = '''<td>V</td>'''
             except:
                 cell_value = '''<td bgcolor="#ffbb00">???</td>'''
-            str_html +=cell_value
-        #close Row
+            str_html += cell_value
+        # close Row
         str_html += '''</tr>'''
-    #Close html Template
+    # Close html Template
     str_html += HTML_BASE_END
-    with open('conc.html','w',encoding="utf8") as output:
+    with open('conc.html', 'w', encoding="utf8") as output:
         output.write(str_html)
     webbrowser.open_new_tab('conc.html')
 
@@ -240,7 +259,7 @@ if __name__ == "__main__":
     print("* Hello, This Program will Generate an html output of the     *")
     print("* HOME_WORK check status in your classes.                     *")
     print("* You will be prompt to enter your username and password      *")
-    print("* !! Password will not be saved.                              *")
+    print("* !! Password will not be saved (characters are hidden).      *")
     print("* Then you will be asked to enter base name of template class *")
     print("* this value is necessary to filter the results.              *")
     print("* -> example: 09-C_Programming-1                              *")
@@ -251,7 +270,7 @@ if __name__ == "__main__":
     print("***************************************************************")
     cont = input("Press Enter to Continue.")
     USERNAME = input("Enter Your EDU UserName: ")
-    PASSWORD = input("Enter Your EDU Password: ")
+    PASSWORD = getpass.getpass("Enter Your EDU Password: ")
     TEMPLATE_NAME = input("Enter Base Name Of template Class: ")
     login_to_site()
     print()
