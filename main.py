@@ -1,35 +1,39 @@
-import urllib.request
 from bs4 import BeautifulSoup
 from datetime import date, datetime
 import requests
 from selenium import webdriver
-import selenium
 import time
 import re
 import os
 import codecs
 from html_bases import HTML_BASE_START,HTML_BASE_END
 import webbrowser
-import getpass
 
-teacher_ids_list = []
-TEMPLATE_NAME = ""
-USERNAME = ""
-PASSWORD = ""
-ASSIGNMENT_BASE = "https://magshimim.edu20.org/teacher_assignments/list/"
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MONTHS = ['Jan', "Feb", 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-CURRENT_YEAR = 2019
-relevant_data = {}
-CHECK_TIME = 14
+teacher_ids_list = []  # This list Contains all teachers ID's
+TEMPLATE_NAME = ""  # Stores class template name for filtering
+USERNAME = ""  # Stores users UserName
+PASSWORD = ""  # Stores users Password
+ASSIGNMENT_BASE = "https://magshimim.edu20.org/teacher_assignments/list/"  # Stores Base Assignment URL
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Stores Base Directory
+MONTHS = ['Jan', "Feb", 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']  # Stores Month Format
+CURRENT_YEAR = 2019  # Stores Default Year Value
+relevant_data = {}  # Stores Data to Display
+CHECK_TIME = 14  # Stores Base Time for checking assignment
 
 
+
+'''
+This Function will connect to https://magshimim.edu20.org/
+Using the username and password that was entered. 
+Inputs are Global.
+'''
 def login_to_site():
+    # Create New session
     with requests.Session() as s:
         url = 'https://magshimim.edu20.org/'
-        # driver = webdriver.Chrome(executable_path=r'C:/Users/Prkr_Xps/Downloads/chromedriver_win32/chromedriver.exe')
         driver = webdriver.Chrome(executable_path=r'resources/chromedriver.exe')
         driver.get(url)
+        # Get Login Button
         button = driver.find_element_by_class_name('loginHolder')
         button.click()
         time.sleep(1)
@@ -37,6 +41,7 @@ def login_to_site():
         password = driver.find_element_by_id("password")
         username.send_keys(USERNAME)
         password.send_keys(PASSWORD)
+        # LogIn
         driver.find_element_by_id("submit_button").click()
         time.sleep(1)
 
@@ -45,26 +50,34 @@ def login_to_site():
         soup = BeautifulSoup(content, 'html.parser')
         with open("data/home.html", 'wb') as out:
             out.write(soup.encode("utf-8"))
+        # Find all teacher id's
         get_teacher_ids()
+        # Download relevant Pages
         get_teacher_assignments(driver)
+        # Extract Data from HTML
         get_teacher_data()
+        # Build HTML for presentation
         generate_conclusion()
 
-
+'''
+Download all relevant Pages using teachers ID's
+'''
 def get_teacher_assignments(driver):
     for id in teacher_ids_list:
         driver.get("https://magshimim.edu20.org/teacher_assignments/list/" + id)
         content = driver.page_source
-
+        # Use soup to parse HTML
         soup = BeautifulSoup(content, 'html.parser')
-        # relevant = re.search(r'סקר חניכים סמסטר א', str(soup))
         relevant = str(soup.find('h1'))
+        # data is relevant if Template name is with in
         if TEMPLATE_NAME in relevant:
             with open("data/" + id + ".html", 'wb') as out:
                 out.write(soup.encode("utf-8"))
         time.sleep(1)
 
-
+'''
+Extract Teachers ID's from Home Page
+'''
 def get_teacher_ids():
     with codecs.open('data/home.html', 'r', encoding="utf8") as file:
         home_page = file.read()
@@ -72,23 +85,30 @@ def get_teacher_ids():
         for element in ids:
             teacher_ids_list.append(element.split('show/')[1])
 
-
+'''
+This Function sees all the data and 
+calls another function to extract only the relevant parts. 
+'''
 def get_teacher_data():
-    data_dict = {}
+    # Get File list from folder
     files_list = get_file_list()
     for file in files_list:
         with open(file, 'r', encoding="utf8") as input_f:
             raw_data = input_f.read()
             t_id = os.path.basename(file)
             t_id = t_id.split('.')[0]
+            # Parse text and calculate
             get_relevant_data(raw_data, t_id)
     return "Done"
 
-
+'''
+Get relevant Data From Assignments HTML Pages
+'''
 def get_relevant_data(raw_data, t_id):
     global relevant_data
     rel_rows = []
     soup = BeautifulSoup(raw_data, 'html.parser')
+    # Parse class name
     class_name = soup.find("h1")
     class_name = str(class_name).replace('\n', '')
     class_name = class_name.replace('<h1>', '')
@@ -96,6 +116,7 @@ def get_relevant_data(raw_data, t_id):
     class_name = class_name.lstrip()
     class_name = class_name.rstrip()
     rows = soup.find_all("tr")
+    # save only Rows with Dates
     for row in rows:
         for month in MONTHS:
             if month in str(row):
@@ -104,10 +125,12 @@ def get_relevant_data(raw_data, t_id):
         try:
             to_grade = None
             if 'Essay' in str(row):
+                # Get assignment name
                 ass_name = row.split('title="Essay:')[1]
                 ass_name = ass_name.split('</a>')[0]
                 ass_name = ass_name.split('>')[0]
                 ass_name = ass_name.replace('"', '')
+                # Calculate Due
                 due = row.split('<td class="hideCell">')[2]
                 if len(due) > 6:
                     due = due.split('<')[0]
@@ -120,14 +143,17 @@ def get_relevant_data(raw_data, t_id):
                 today = date.today()
                 days_passed = datetime.today() - due_day
                 days_passed = str(days_passed).split(' ')[0]
-                if '-' in days_passed:  # if days past is negative we need to take the previous year
+                # if days past is negative we need to take the previous year
+                if '-' in days_passed:
                     due_day = datetime.strptime(due + ' ' + str(CURRENT_YEAR - 1), '%b %d %Y')
                     today = date.today()
                     days_passed = datetime.today() - due_day
                     days_passed = str(days_passed).split(' ')[0]
+                # Get Given indicator
                 given = row.split('<span class="textOffScreen">')[1]
                 given = given.split('</span>')[0]
                 try:
+                    # if teacher has assignments to grade this line will appear in the row
                     if '/teacher_freeform_assignment/to_grade/' in str(row):
                         to_grade = row.split('<a href="/teacher_freeform_assignment/to_grade/')[0]
                         to_grade = to_grade.split('<td align="center" width="45">')[1]
@@ -137,6 +163,7 @@ def get_relevant_data(raw_data, t_id):
                         to_grade = None
                 except IndexError:
                     to_grade = None
+                # save Relevant Data in dedicated Dictionary
                 if class_name not in relevant_data:
                     relevant_data[class_name] = {}
                 relevant_data[class_name][ass_name] = {}
@@ -146,7 +173,9 @@ def get_relevant_data(raw_data, t_id):
         except Exception as e:
             print(e)
 
-
+'''
+Gets File list from Path
+'''
 def get_file_list():
     path = os.path.join(BASE_DIR, 'data')
     file_list = []
@@ -156,7 +185,12 @@ def get_file_list():
                 file_list.append(os.path.join(root, file))
     return file_list
 
-
+'''
+This is the main function for generating the results . 
+the results are generated during run time and the HTML code is being writen 
+accordingly.
+The Function is heavily commented for further reuse.
+'''
 def generate_conclusion():
     global relevant_data
     first_iter = 1
@@ -199,7 +233,9 @@ def generate_conclusion():
         output.write(str_html)
     webbrowser.open_new_tab('conc.html')
 
+
 if __name__ == "__main__":
+    CURRENT_YEAR = int(date.today().year)
     print("***************************************************************")
     print("* Hello, This Program will Generate an html output of the     *")
     print("* HOME_WORK check status in your classes.                     *")
