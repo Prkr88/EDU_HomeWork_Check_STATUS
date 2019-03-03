@@ -8,9 +8,9 @@ Instructions:
 
 How to activate:
 
-Download the repozitory zip .\n
-Double Click runProgram.bat .\n
-Read The Next Section .\n
+Download the repozitory zip .
+Double Click runProgram.bat .
+Read The Next Section .
 
 ***************************************************************
  Hello, This Program will Generate an html output of the     
