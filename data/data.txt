@@ -1,0 +1,1 @@
+this folder will contain all html files necessary for the process.
