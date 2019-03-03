@@ -26,7 +26,8 @@ relevant_data = {}
 def login_to_site():
     with requests.Session() as s:
         url = 'https://magshimim.edu20.org/'
-        driver = webdriver.Chrome(executable_path=r'C:/Users/Prkr_Xps/Downloads/chromedriver_win32/chromedriver.exe')
+        # driver = webdriver.Chrome(executable_path=r'C:/Users/Prkr_Xps/Downloads/chromedriver_win32/chromedriver.exe')
+        driver = webdriver.Chrome(executable_path=r'resources/chromedriver.exe')
         driver.get(url)
         button = driver.find_element_by_class_name('loginHolder')
         button.click()
