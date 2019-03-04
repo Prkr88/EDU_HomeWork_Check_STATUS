@@ -19,7 +19,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Stores Base Directory
 MONTHS = ['Jan', "Feb", 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']  # Stores Month Format
 CURRENT_YEAR = 2019  # Stores Default Year Value
 relevant_data = {}  # Stores Data to Display
-CHECK_TIME = 14  # Stores Base Time for checking assignment
+CHECK_TIME = 7  # Stores Base Time for checking assignment
 
 '''
 This Function will connect to https://magshimim.edu20.org/
