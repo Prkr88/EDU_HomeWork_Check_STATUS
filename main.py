@@ -86,11 +86,25 @@ Extract Teachers ID's from Home Page
 
 
 def get_teacher_ids():
+    classifier_t = "/teacher_class/show/" # this classifier appears in the relevant rows
     with codecs.open('data/home.html', 'r', encoding="utf8") as file:
         home_page = file.read()
-        ids = re.findall(r'<a href="/teacher_class/show/\w+', home_page)
-        for element in ids:
-            teacher_ids_list.append(element.split('show/')[1])
+        soup = BeautifulSoup(home_page, 'html.parser')
+        ids = soup.findAll(("a", {"class": "commentTitle"}))
+        # Filter to get only desired results
+        for id in ids:
+            if classifier_t in str(id):
+                if TEMPLATE_NAME in str(id):
+                    if "rel" in str(id):
+                        id_t = str(str(id).split("rel")[1]).split(">")[0]
+                        id_t = id_t.replace('"', "")
+                        id_t = id_t.replace('=', "")
+                        teacher_ids_list.append(id_t)
+    # with codecs.open('data/home.html', 'r', encoding="utf8") as file:
+    #     home_page = file.read()
+    #     ids = re.findall(r'<a href="/teacher_class/show/\w+', home_page)
+    #     for element in ids:
+    #         teacher_ids_list.append(element.split('show/')[1])
 
 
 '''
@@ -273,6 +287,7 @@ if __name__ == "__main__":
     PASSWORD = getpass.getpass("Enter Your EDU Password: ")
     TEMPLATE_NAME = input("Enter Base Name Of template Class: ")
     login_to_site()
+
     print()
     print("***************************************************************")
     print("*                       DONE!                                 *")
