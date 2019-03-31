@@ -86,7 +86,7 @@ Extract Teachers ID's from Home Page
 
 
 def get_teacher_ids():
-    classifier_t = "/teacher_class/show/" # this classifier appears in the relevant rows
+    classifier_t = "/teacher_class/show/"  # this classifier appears in the relevant rows
     with codecs.open('data/home.html', 'r', encoding="utf8") as file:
         home_page = file.read()
         soup = BeautifulSoup(home_page, 'html.parser')
@@ -171,7 +171,7 @@ def get_relevant_data(raw_data, t_id):
                 days_passed = datetime.today() - due_day
                 days_passed = str(days_passed).split(' ')[0]
                 # if days past is negative we need to take the previous year
-                if '-' in days_passed:
+                if '-' in days_passed and int(days_passed) < -CHECK_TIME:
                     due_day = datetime.strptime(due + ' ' + str(CURRENT_YEAR - 1), '%b %d %Y')
                     today = date.today()
                     days_passed = datetime.today() - due_day
@@ -197,6 +197,9 @@ def get_relevant_data(raw_data, t_id):
                 relevant_data[class_name][ass_name]['to_grade'] = to_grade
                 if given == 'Yes' or to_grade is not None:
                     relevant_data[class_name][ass_name]['days_passed'] = days_passed
+                    relevant_data[class_name][ass_name]['given'] = 'Yes'
+                elif given == 'No':
+                    relevant_data[class_name][ass_name]['given'] = 'No'
         except Exception as e:
             print(e)
 
@@ -252,7 +255,9 @@ def generate_conclusion():
                     if day_p > 0:
                         cell_value = '''<td bgcolor="#ed3300">''' + 'late in ' + str(day_p) + " Days"'''</td>'''
                     else:
-                        cell_value = '''<td">Not Dued Yet</td>'''
+                        cell_value = '''<td>Not Dued Yet</td>'''
+                elif value[a_name]['given'] == "No":
+                    cell_value = '''<td bgcolor="#808080">Not Submited Yet</td>'''
                 else:
                     cell_value = '''<td>V</td>'''
             except:
@@ -287,7 +292,8 @@ if __name__ == "__main__":
     PASSWORD = getpass.getpass("Enter Your EDU Password: ")
     TEMPLATE_NAME = input("Enter Base Name Of template Class: ")
     login_to_site()
-
+    get_teacher_data()
+    generate_conclusion()
     print()
     print("***************************************************************")
     print("*                       DONE!                                 *")
